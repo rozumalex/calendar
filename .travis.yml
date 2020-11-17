@@ -17,6 +17,7 @@ before_script:
   - psql -c "CREATE DATABASE calendarapp_db;" -U postgres
   - psql -c "CREATE USER calendarapp_user with encrypted password 'pass';" -U postgres
   - psql -c "GRANT ALL PRIVILEGES ON DATABASE calendarapp_db TO calendarapp_user;" -U postgres
+  - psql -c "ALTER USER calendarapp_user createdb;" -U postgres
   - python manage.py migrate --noinput
 
 env:
