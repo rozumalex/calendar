@@ -1,0 +1,33 @@
+language: python
+
+dist: bionic
+
+python:
+  - "3.8"
+
+install:
+  - pip install poetry
+  - poetry install
+
+services:
+  - postgresql
+
+before_script:
+  - cd calendarapp
+  - psql -c "CREATE DATABASE calendarapp_db;" -U postgres
+  - psql -c "CREATE USER calendarapp_user with encrypted password 'pass';" -U postgres
+  - psql -c "GRANT ALL PRIVILEGES ON DATABASE votepizza_db TO calendarapp_user;" -U postgres
+  - python manage.py migrate --noinput
+
+env:
+  global:
+    - DEBUG=True
+    - SECRET_KEY="dev"
+    - DATABASE_URL=psql://calendarapp_user:pass@127.0.0.1:5432/calendarapp_db
+
+script:
+  - flake8
+  - pytest
+
+after_success:
+  - codecov
