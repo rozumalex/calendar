@@ -12,6 +12,8 @@ from locations.models import ConferenceRoom
 from accounts. models import User
 
 
+# TODO: use pytest instead of TestCases
+
 class MeetingListCreateAPIViewTestCase(APITestCase):
     url = reverse("events:events_list")
 
@@ -74,6 +76,16 @@ class MeetingListCreateAPIViewTestCase(APITestCase):
 
         base_meet.participants.add(anna, james, self.user)
 
+        private_meeting = Meeting.objects.create(
+            owner=anna,
+            event_name="Private Meeting",
+            meeting_agenda="Discuss alex",
+            start=timezone.datetime(2020, 11, 24, 12, tzinfo=tz),
+            end=timezone.datetime(2020, 11, 24, 13, tzinfo=tz),
+            location=room)
+
+        private_meeting.participants.add(james)
+
     def api_authentication(self):
         self.client.credentials(HTTP_AUTHORIZATION='Token ' + self.token.key)
 
@@ -88,6 +100,18 @@ class MeetingListCreateAPIViewTestCase(APITestCase):
              })
 
         self.assertEqual(201, response.status_code)
+
+    def test_create_very_long_meeting(self):
+        response = self.client.post(
+            self.url,
+            {"event_name": "Party Weekend",
+             "meeting_agenda": "From Friday to Sunday",
+             "start": "2020-11-20 18:00",
+             "end": "2020-11-22 10:00",
+             "participant_list": []
+             })
+
+        self.assertEqual(400, response.status_code)
 
     def test_day_filter_meeting(self):
         response = self.client.get(self.url, data={'day': '2020-11-23'})
@@ -104,7 +128,11 @@ class MeetingListCreateAPIViewTestCase(APITestCase):
         response = self.client.get(self.url, data={'query': 'dail'})
         self.assertEqual(len(json.loads(response.content)), 1)
 
-    def test_user_meetings(self):
+    def test_search_meeting_where_not_participate(self):
+        response = self.client.get(self.url, data={'query': 'private'})
+        self.assertEqual(len(json.loads(response.content)), 0)
+
+    def test_users_meetings(self):
         user = self.user
         tz = pytz.timezone(user.timezone)
         meeting = Meeting.objects.create(
@@ -114,6 +142,5 @@ class MeetingListCreateAPIViewTestCase(APITestCase):
             start=timezone.datetime(2020, 12, 31, 21, tzinfo=tz),
             end=timezone.datetime(2021, 1, 1, 3, tzinfo=tz))
         meeting.participants.add(user)
-        response = self.client.get(self.url)
-        self.assertEqual(len(json.loads(response.content)),
-                         Meeting.objects.count())
+        response = self.client.get(self.url, data={'query': 'Year'})
+        self.assertEqual(len(json.loads(response.content)), 1)

@@ -98,6 +98,7 @@ class MeetingWriteSerializer(MeetingSerializer):
         return meeting
 
     def to_representation(self, instance):
+        # TODO: Refactor representation in more simple way
         representation = super().to_representation(instance)
 
         participant_list = []
