@@ -1,6 +1,7 @@
 from django.db import models
 from django.utils import timezone
-from django.core.exceptions import ValidationError
+
+from rest_framework.validators import ValidationError
 
 from accounts.models import User
 from locations.models import ConferenceRoom

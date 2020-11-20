@@ -1,8 +1,10 @@
-from django.core.exceptions import ValidationError
 from django.db import transaction
 from rest_framework import serializers
+from rest_framework.validators import ValidationError
 
-from .models import Meeting
+import uuid
+
+from .models import Meeting, Participant
 from locations.models import ConferenceRoom
 from locations.serializers import ConferenceRoomSerializer
 from accounts.models import User
@@ -17,8 +19,13 @@ class ParticipantSerializer(serializers.ModelSerializer):
 
 
 class MeetingSerializer(serializers.ModelSerializer):
+    owner_id = serializers.UUIDField()
     start = serializers.DateTimeField(format="%Y-%m-%d %H:%M")
     end = serializers.DateTimeField(format="%Y-%m-%d %H:%M")
+    participant_list = serializers.SlugRelatedField(many=True,
+                                                    source='participants',
+                                                    slug_field='email',
+                                                    queryset=User.objects.all())
 
     class Meta:
         model = Meeting

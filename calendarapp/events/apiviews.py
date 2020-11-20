@@ -5,19 +5,21 @@ from rest_framework import generics
 from functools import reduce
 
 from .models import Meeting
-from .serializers import MeetingWriteSerializer, MeetingReadSerializer
+from .serializers import MeetingWriteSerializer, MeetingReadSerializer, \
+    MeetingSerializer
 
 
 class MeetingListView(generics.ListCreateAPIView):
-    read_serializer_class = MeetingReadSerializer
-    write_serializer_class = MeetingWriteSerializer
+    serializer_class = MeetingSerializer
+    # read_serializer_class = MeetingReadSerializer
+    # write_serializer_class = MeetingWriteSerializer
     queryset = Meeting.objects.all()
 
-    def get_serializer_class(self):
-        if self.request.method == 'GET':
-            return self.read_serializer_class
-        else:
-            return self.write_serializer_class
+    # def get_serializer_class(self):
+    #     if self.request.method == 'GET':
+    #         return self.read_serializer_class
+    #     else:
+    #         return self.write_serializer_class
 
     def get_queryset(self):
         user = self.request.user
